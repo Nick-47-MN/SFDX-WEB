@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salesforce OAuth 2.0 Flow</title>
+    <style>
+        .hidden {
+            display: none;
+        }
+        #buttons-container {
+            margin-top: 20px;
+        }
+        button {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Salesforce Custom Button Display</h1>
+    <p>Based on custom settings, the buttons below will appear or remain hidden:</p>
+
+    <!-- Buttons that will be displayed based on custom settings -->
+    <div id="buttons-container">
+        <button id="button1" class="hidden">Button 1</button>
+        <button id="button2" class="hidden">Button 2</button>
+    </div>
+
+    <script>
+        const clientId = 'YOUR_CLIENT_ID';  // Salesforce Connected App Consumer Key
+        const clientSecret = 'YOUR_CLIENT_SECRET';  // Salesforce Connected App Consumer Secret
+        const redirectUri = window.location.href;  // Redirect URI to this same page
+        const tokenUrl = 'https://login.salesforce.com/services/oauth2/token';
+
+        // Function to extract query parameters (such as the authorization code)
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Redirect user to Salesforce for authorization
+        function redirectToSalesforceAuth() {
+            const authUrl = `https://login.salesforce.com/services/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+            window.location.href = authUrl;
+        }
+
+        // Function to exchange the authorization code for an access token
+        async function fetchAccessToken(authCode) {
+            const formData = new URLSearchParams();
+            formData.append('grant_type', 'authorization_code');
+            formData.append('client_id', clientId);
+            formData.append('client_secret', clientSecret);
+            formData.append('redirect_uri', redirectUri);
+            formData.append('code', authCode);
+
+            try {
+                const response = await fetch(tokenUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (data.access_token) {
+                    console.log('Access token:', data.access_token);
+                    // Use the access token to call the custom setting API
+                    showButtons(data.access_token);
+                } else {
+                    console.error('Error fetching token:', data);
+                }
+            } catch (error) {
+                console.error('Error in token request:', error);
+            }
+        }
+
+        // Function to call Salesforce's custom setting API and show buttons based on the response
+        async function showButtons(accessToken) {
+            const apiUrl = '/services/apexrest/customSettingAPI/'; // Make sure this is the right API endpoint
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + accessToken
+                    }
+                });
+
+                const data = await response.json();
+                if (data.Button1Enabled === 'true') {
+                    document.getElementById('button1').classList.remove('hidden');
+                }
+                if (data.Button2Enabled === 'true') {
+                    document.getElementById('button2').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error fetching custom settings:', error);
+            }
+        }
+
+        // Extract authorization code from the URL if available
+        const authCode = getQueryParam('code');
+
+        if (authCode) {
+            // If authorization code is available, exchange it for an access token
+            fetchAccessToken(authCode);
+            // Remove the authorization code from the URL to keep the page clean (optional)
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } else {
+            // If no authorization code, initiate OAuth flow
+            redirectToSalesforceAuth();
+        }
+    </script>
+</body>
+</html>
