@@ -45,28 +45,34 @@
 
         // Function to call Salesforce's custom setting API and show buttons based on the response
         async function showButtons(accessToken) {
-            const apiUrl = '/services/apexrest/customSettingAPI/'; 
+    const apiUrl = 'https://maneendranath-dev-ed.my.salesforce.com/services/apexrest/customSettingAPI/'; 
 
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + accessToken
-                    }
-                });
-
-                const data = await response.json();
-                if (data.Button1Enabled === 'true') {
-                    document.getElementById('button1').classList.remove('hidden');
-                }
-                if (data.Button2Enabled === 'true') {
-                    document.getElementById('button2').classList.remove('hidden');
-                }
-            } catch (error) {
-                console.error('Error fetching custom settings:', error);
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + accessToken
             }
+        });
+
+        // Check if the response is OK (status 200)
+        if (!response.ok) {
+            const errorText = await response.text(); // Get the error response as text
+            throw new Error(`HTTP error! Status: ${response.status}. Response: ${errorText}`);
         }
+
+        const data = await response.json();
+        if (data.Button1Enabled === 'true') {
+            document.getElementById('button1').classList.remove('hidden');
+        }
+        if (data.Button2Enabled === 'true') {
+            document.getElementById('button2').classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('Error fetching custom settings:', error);
+    }
+}
 
         // Check if access token is available in the URL
         const accessToken = getAccessTokenFromUrl();
