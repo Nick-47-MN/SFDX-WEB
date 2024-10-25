@@ -27,10 +27,10 @@
     </div>
 
     <script>
-        const clientId = 'YOUR_CLIENT_ID';  // Salesforce Connected App Consumer Key
-        const clientSecret = 'YOUR_CLIENT_SECRET';  // Salesforce Connected App Consumer Secret
-        const redirectUri = window.location.href;  // Redirect URI to this same page
-        const tokenUrl = 'https://login.salesforce.com/services/oauth2/token';
+        const clientId = '3MVG9d8..z.hDcPKIsCpCQuxIpuGIM0fLi5M.H17IH2BZPG4Z8snvCzIZCO.txJwRiyT2kHt4Pnmdm32eAypc';  
+        const clientSecret = '749921D2E6CFA8FC891C2AB8556331FD0960E230528E412CCCDA776D50B48519';  
+        const redirectUri =  'https://nick-47-mn.github.io/SFDX-WEB';  
+        const tokenUrl = 'https://maneendranath-dev-ed.my.salesforce.com/services/oauth2/token';
 
         // Function to extract query parameters (such as the authorization code)
         function getQueryParam(param) {
@@ -40,7 +40,7 @@
 
         // Redirect user to Salesforce for authorization
         function redirectToSalesforceAuth() {
-            const authUrl = `https://login.salesforce.com/services/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+            const authUrl = `https://maneendranath-dev-ed.my.salesforce.com/services/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}`;
             window.location.href = authUrl;
         }
 
@@ -77,7 +77,7 @@
 
         // Function to call Salesforce's custom setting API and show buttons based on the response
         async function showButtons(accessToken) {
-            const apiUrl = '/services/apexrest/customSettingAPI/'; // Make sure this is the right API endpoint
+            const apiUrl = '/services/apexrest/customSettingAPI/'; 
 
             try {
                 const response = await fetch(apiUrl, {
