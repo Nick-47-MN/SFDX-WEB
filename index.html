@@ -28,51 +28,19 @@
 
     <script>
         const clientId = '3MVG9d8..z.hDcPKIsCpCQuxIpuGIM0fLi5M.H17IH2BZPG4Z8snvCzIZCO.txJwRiyT2kHt4Pnmdm32eAypc';  
-        const clientSecret = '749921D2E6CFA8FC891C2AB8556331FD0960E230528E412CCCDA776D50B48519';  
         const redirectUri =  'https://nick-47-mn.github.io/SFDX-WEB';  
-        const tokenUrl = 'https://maneendranath-dev-ed.my.salesforce.com/services/oauth2/token';
 
-        // Function to extract query parameters (such as the authorization code)
-        function getQueryParam(param) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param);
-        }
-
-        // Redirect user to Salesforce for authorization
+        // Redirect user to Salesforce for authorization using Implicit Flow
         function redirectToSalesforceAuth() {
-            const authUrl = `https://maneendranath-dev-ed.my.salesforce.com/services/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+            const authUrl = `https://maneendranath-dev-ed.my.salesforce.com/services/oauth2/authorize?response_type=token&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}`;
             window.location.href = authUrl;
         }
 
-        // Function to exchange the authorization code for an access token
-        async function fetchAccessToken(authCode) {
-            const formData = new URLSearchParams();
-            formData.append('grant_type', 'authorization_code');
-            formData.append('client_id', clientId);
-            formData.append('client_secret', clientSecret);
-            formData.append('redirect_uri', redirectUri);
-            formData.append('code', authCode);
-
-            try {
-                const response = await fetch(tokenUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: formData
-                });
-
-                const data = await response.json();
-                if (data.access_token) {
-                    console.log('Access token:', data.access_token);
-                    // Use the access token to call the custom setting API
-                    showButtons(data.access_token);
-                } else {
-                    console.error('Error fetching token:', data);
-                }
-            } catch (error) {
-                console.error('Error in token request:', error);
-            }
+        // Function to extract the access token from the URL fragment
+        function getAccessTokenFromUrl() {
+            const fragment = window.location.hash;
+            const params = new URLSearchParams(fragment.replace('#', ''));
+            return params.get('access_token');
         }
 
         // Function to call Salesforce's custom setting API and show buttons based on the response
@@ -100,16 +68,15 @@
             }
         }
 
-        // Extract authorization code from the URL if available
-        const authCode = getQueryParam('code');
+        // Check if access token is available in the URL
+        const accessToken = getAccessTokenFromUrl();
 
-        if (authCode) {
-            // If authorization code is available, exchange it for an access token
-            fetchAccessToken(authCode);
-            // Remove the authorization code from the URL to keep the page clean (optional)
-            window.history.replaceState({}, document.title, window.location.pathname);
+        if (accessToken) {
+            // If access token is available, show buttons
+            console.log('Access token:', accessToken);
+            showButtons(accessToken);
         } else {
-            // If no authorization code, initiate OAuth flow
+            // If no access token, initiate OAuth flow
             redirectToSalesforceAuth();
         }
     </script>
